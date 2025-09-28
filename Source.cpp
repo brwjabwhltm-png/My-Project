@@ -1,42 +1,57 @@
 #include<iostream>
 using namespace std;
-enum enChoice{Storn=1, Paper=2, Scissor=3};
-enum enWiner{player=1, computer=2, draw=3};
 
-struct stRounds
+enum enlevel{Easy=1, Med=2, Hard=3, Mix=4};
+enum enOprator{Add=1, Sub=2, Mult=3, Div=4, Max=5};
+
+struct stQuestions
 {
-	short round;
-	enChoice player;
-	enChoice computer;
-	enWiner winer;
-	string winername;
+	short howmanyquestions;
+	enlevel levelquestion;
+	enOprator opratorquestion;
+	short answer;
+	short correctanswer;
+	short firstnumber, sacandnumber;
+	bool iscorrect;
 };
-struct stGame
+struct stGameResult
 {
-	short howrounds = 0;
-	short winplayer, wincomputer;
-	short drawtimes;
-	string namewiner;
+	stQuestions Questions[100];
+	short numberofquestions;
+	enlevel levelGame;
+	enOprator opratorquestion;
+	short countrigth=0,countworng=0;
+	bool ispass;
 };
 
-short ReadHowRounds(string massage)
+int ReadHowManyQuestions(string massage)
 {
-	short numberrounds = 0;
+	int number;
 	do {
 		cout << massage << endl;
-		cin >> numberrounds;
-	} while (numberrounds > 10 || numberrounds <= 0);
-	return numberrounds;
+		cin >> number;
+	} while (number<1||number>10);
+	return number;
 }
 
-enChoice ReadChoicePlayer(string massage)
+enlevel ReadLevelQuestion(string massage)
 {
-	int read;
+	int level;
 	do {
 		cout << massage << endl;
-		cin >> read;
-	} while (read>3||read<1);
-	return (enChoice)read;
+		cin >> level;
+	} while (level>4||level<1);
+	return (enlevel)level;
+}
+
+enOprator ReadOpratorQuestion(string massage)
+{
+	int oprator;
+	do {
+		cout << massage << endl;
+		cin >> oprator;
+	} while (oprator > 5 || oprator < 1);
+	return (enOprator)oprator;
 }
 
 int RandomNumber(int from, int to)
@@ -45,141 +60,196 @@ int RandomNumber(int from, int to)
 	return random;
 }
 
-enChoice GetRandomNumber()
+string GetOprator(enOprator p)
 {
-	return (enChoice)RandomNumber(1, 3);
-}
-
-enWiner WhoWon(stRounds info)
-{
-	if (info.computer == info.player)
+	switch (p)
 	{
-		return enWiner::draw;
-	}
-	switch (info.player)
-	{
-	case Storn:
-		if (info.computer == enChoice::Paper) return enWiner::computer;
+	case Add:return "+";
 		break;
-	case Paper: if(info.computer== enChoice::Scissor) return enWiner::computer;
+	case Sub: return "-";
 		break;
-	case Scissor:if (info.computer == enChoice::Storn) return enWiner::computer;
+	case Mult:return "*";
+		break;
+	case Div:return "/";
 		break;
 	default:
 		break;
 	}
-	return enWiner::player;
 }
 
-string GetNameWiner(short number)
+int ReadNumber()
 {
-	string win[3] = { "player", "computer", "draw" };
-	return win[number - 1];
+	int number;
+	cin >> number;
+	return number;
 }
 
-string Choice(short number)
+void ChangeScreen(bool correct)
 {
-	string choice[3] = { "Storn", "Paper", "Scisor" };
-	return choice[number - 1];
-}
-
-void PrintRoundResult(stRounds info)
-{
-	cout << "__________________Round [" << info.round << "]__________________\n" << endl;
-	cout << "Player1 Choice: " << Choice(info.player) << endl;
-	cout << "Computer Choice: " << Choice(info.computer) << endl;
-	cout << "Round Winner: " << info.winername << endl;
-	cout << "______________________________________________\n" << endl;
-}
-
-string WhoWonGame(short contp, short contc)
-{
-	if (contp > contc)
-		return "player";
-	else if (contp < contc)
-		return "computer";
-	else
-		return "draw";
-}
-
-stGame FillResultGame(stRounds info, short contplayer, short contcomputer, short contdraw)
-{
-	stGame result;
-	result.howrounds = info.round;
-	result.winplayer = contplayer;
-	result.wincomputer = contcomputer;
-	result.drawtimes = contdraw;
-	result.namewiner = WhoWonGame(contplayer, contcomputer);
-	return result;
-}
-
-void ChangeScreen(stRounds info)
-{
-	if (info.winername == "player")
+	if (correct)
 		system("color 2F");
-	else if (info.winername == "computer")
-		system("color 4F");
 	else
-		system("color 6F");
+		system("color 4F");
 }
 
-stGame PlayGame(short howrounds)
+void IsAnsswerCorrect(stGameResult& answer,short a)
 {
-	stRounds info;
-	short contplayer=0, contcomputer=0, contdraw=0;
-	for (int round = 1; round <= howrounds; round++)
+	answer.Questions[a].iscorrect = (answer.Questions[a].answer == answer.Questions[a].correctanswer);
+	if (answer.Questions[a].iscorrect)
 	{
-		cout << "Round[" << round << "] begins:" << endl;
-		info.round = round;
-		info.player = ReadChoicePlayer("Your Choice: [1]:Stone, [2]:Paper, [3]:Scissors?");
-		info.computer = GetRandomNumber();
-		info.winer = WhoWon(info);
-		info.winername = GetNameWiner(info.winer);
-		
-		if (info.winername == "player")
-			++contplayer;
-		else if (info.winername == "computer")
-			++contcomputer;
-		else
-			++contdraw;
-		ChangeScreen(info);
-
-
-		PrintRoundResult(info);
+		cout << "Right Answer :)" << endl;
+		answer.countrigth+=1;
 	}
-	return FillResultGame( info,contplayer,contcomputer,contdraw);
-}
-
-string Tabs(int number)
-{
-	string t = "";
-	for (int i = 0; i < number; i++)
+	else
 	{
-		t += "\t";
+		cout << "Worng Answer :(" << endl;
+		cout << "The correct answer is " <<answer.Questions[a].correctanswer<<endl;
+		answer.countworng+=1;
 	}
-	return t;
+	ChangeScreen(answer.Questions[a].iscorrect);
 }
 
-void PrintGameOver()
+string Choice(short nlevel)
 {
-	cout << Tabs(3) << "__________________________________________________________________________" << endl;
-	cout<<Tabs(3) << "                            +++ G a m e   O v e r +++                       " << endl;
-	cout<< Tabs(3) << "___________________________________________________________________________" << endl;
+	string choice[3] = { "Easy", "Med", "Hard" };
+	return choice[nlevel - 1];
 }
 
-void PrintGameResult(stGame rgame)
+string ChoiceOprator(short optype)
 {
-	cout << endl;
-	cout << Tabs(3) << "_______________________________[ Game Results ]____________________________" << endl;
-	cout << Tabs(3) << "Game Rounds            : " << rgame.howrounds << endl;
-	cout << Tabs(3) << "Player1 won times      : " << rgame.winplayer << endl;
-	cout << Tabs(3) << "Computer won times     : " << rgame.wincomputer << endl;
-	cout << Tabs(3) << "Draw times             : " << rgame.drawtimes << endl;
-	cout << Tabs(3) << "Final Winner           : " << rgame.namewiner << endl;
-	cout << Tabs(3) << "___________________________________________________________________________" << endl;
+	string choice[5] = { "Add", "Sub", "Mult", "Div","Mix"};
+	return choice[optype - 1];
 }
 
-void Resturt()
+string IsPassOrNot(bool is)
+{
+	if (is)
+		return "Pass :-)";
+	else
+		return "Fail :-(";
+}
+
+void PrintGameResult(stGameResult gameresult)
+{
+	cout << "____________________________________________\n" << endl;
+	cout << " Final Results is " << IsPassOrNot(gameresult.ispass) << endl;
+	cout << "____________________________________________\n" << endl;
+
+	cout << "\n\nNumber Of Questions       : " << gameresult.numberofquestions << endl;
+	cout << "Questions level           : " << Choice(gameresult.levelGame) << endl;
+	cout << "OpType                    : " << ChoiceOprator(gameresult.opratorquestion) << endl;
+	cout << "Number of Right Answer    : " << gameresult.countrigth << endl;
+	cout << "Number of Worng Answer    : " << gameresult.countworng << endl;
+	cout << "____________________________________________\n" << endl;
+}
+
+void PrintQuestion(stGameResult Quize,short counter) 
+{
+	cout << "Question [" << counter + 1 << "/" << Quize.numberofquestions << "]" << endl;
+	cout << "\n" << Quize.Questions[counter].firstnumber << endl;
+	cout << Quize.Questions[counter].sacandnumber << " " << GetOprator(Quize.Questions[counter].opratorquestion) << endl;
+	cout << "____________" << endl;
+}
+
+void AskQuestion(stGameResult& Quize)
+{
+	
+	for (short i = 0; i < Quize.numberofquestions; i++)
+	{
+		PrintQuestion(Quize, i);
+		Quize.Questions[i].answer= ReadNumber();
+
+		IsAnsswerCorrect(Quize,i);
+	}
+	Quize.ispass = (Quize.countrigth>= Quize.countworng);
+}
+
+int CorrectAnswer(stQuestions answer)
+{
+	switch (answer.opratorquestion)
+	{
+	case Add:
+		return  answer.firstnumber + answer.sacandnumber;
+		break;
+	case Sub:
+		return  answer.firstnumber - answer.sacandnumber;
+		break;
+	case Mult:
+		return  answer.firstnumber * answer.sacandnumber;
+		break;
+	case Div:
+		return  answer.firstnumber / answer.sacandnumber;
+		break;
+	default:
+		break;
+	}
+}
+
+stQuestions QuestionQuize(enlevel level, enOprator oprator)
+{
+	stQuestions Question;
+	if(level==enlevel::Mix)
+		level= (enlevel)RandomNumber(1, 3);
+
+	if(oprator==enOprator::Max)
+		oprator=(enOprator)RandomNumber(1, 4);
+
+	Question.opratorquestion = oprator;
+
+	switch (level)
+	{
+	case Easy:
+		Question.firstnumber = RandomNumber(1, 10);
+		Question.sacandnumber = RandomNumber(1, 10);
+		Question.correctanswer = CorrectAnswer(Question);
+		Question.levelquestion = level;
+		return Question;
+
+		break;
+	case Med:
+		Question.firstnumber = RandomNumber(10, 50);
+		Question.sacandnumber = RandomNumber(10, 50);
+		Question.correctanswer = CorrectAnswer(Question);
+		Question.levelquestion = level;
+		return Question;
+
+		break;
+	case Hard: 
+		Question.firstnumber = RandomNumber(50, 100);
+		Question.sacandnumber = RandomNumber(50, 100);
+		Question.correctanswer = CorrectAnswer(Question);
+		Question.levelquestion = level;
+		return Question;
+
+		break;
+	default:
+		break;
+	}
+
+	return  Question;
+}
+
+void QuestionsQuize(stGameResult& gammath)
+{
+	for (short numberQuestion = 0; numberQuestion < gammath.numberofquestions; numberQuestion++)
+	{
+		gammath.Questions[numberQuestion] = QuestionQuize(gammath.levelGame, gammath.opratorquestion);
+	}
+}
+
+void PlayeGameMath()
+{
+	stGameResult gamemath;
+	gamemath.numberofquestions = ReadHowManyQuestions("How Many Questions do you want to answar: ");
+	gamemath.levelGame= ReadLevelQuestion("Enter Questions Level: [1]:Easy, [2]:Med, [3]:Hard, [4]:Max?");
+	gamemath.opratorquestion= ReadOpratorQuestion("Enter Oparation Type: [1]:Add, [2]:Sub, [3]:Mult, [4]:Div, [5]:Max?");
+
+	QuestionsQuize(gamemath);
+	AskQuestion(gamemath);
+	PrintGameResult(gamemath);
+}
+
+void ResturtGame()
 {
 	system("cls");
 	system("color 0F");
@@ -187,19 +257,24 @@ void Resturt()
 
 void StartGame()
 {
-	char agiangame='Y';
+	char again='y';
 	do {
-		Resturt();
-		stGame gameresult=PlayGame(ReadHowRounds("How Many Rounds 1 to 10?"));
-		PrintGameOver();
-		PrintGameResult(gameresult);
+
+		ResturtGame();
+		PlayeGameMath();
+
 		cout << "Do you want to play again? Y/N?" << endl;
-		cin >> agiangame;
-	} while (agiangame == 'y' || agiangame == 'Y');
+		cin >> again;
+
+	} while (again=='y'||again=='Y');
 }
+
 int main()
 {
+
 	srand((unsigned)time(NULL));
+
 	StartGame();
+
 	return 0;
 }
